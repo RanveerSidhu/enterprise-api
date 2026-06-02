@@ -132,4 +132,5 @@ Logout → POST /api/auth/logout → refresh token invalidated in DB
 ## Author
 
 **Ranveer Singh Sidhu** — Full-Stack .NET Developer  
-[LinkedIn](https://www.linkedin.com/in/ranveersinghsidhu) · [GitHub](https://github.com/RanveerSidhu)
+[LinkedIn](https://www.linkedin.com/in/ranveersinghsidhu) · [GitHub](https://github.com/RanveerSidhu)  
+Open to full-time roles in the UK (Skilled Worker Visa Sponsorship required)

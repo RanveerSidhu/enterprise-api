@@ -1,111 +1,136 @@
-EnterpriseApp – ASP.NET Core Clean Architecture API
+# EnterpriseApp — ASP.NET Core Web API
 
-A production-ready ASP.NET Core Web API built using Clean Architecture, featuring JWT authentication with refresh tokens, role-based authorization, EF Core, SQL Server, and Dockerized deployment.
+A production-ready REST API built with **Clean Architecture**, featuring JWT authentication with refresh tokens, role-based authorization, Entity Framework Core, SQL Server, and Docker support.
 
---------------------------------------------------
-FEATURES
---------------------------------------------------
-- Clean Architecture (API / Application / Domain / Infrastructure)
-- RESTful CRUD APIs
-- JWT Authentication
-- Refresh Tokens
-- Role-based Authorization
-- Global Exception Handling
-- Entity Framework Core + Migrations
-- SQL Server integration
-- Swagger / OpenAPI
-- Dockerized (multi-stage build)
+> Built with ASP.NET Core 9 · C# · SQL Server · Docker
 
---------------------------------------------------
-ARCHITECTURE
---------------------------------------------------
-API
-  - Controllers
+---
 
-Application
-  - DTOs
-  - Interfaces
-  - Services
+## Features
 
-Domain
-  - Entities
-  - Interfaces
+- **Clean Architecture** — API / Application / Domain / Infrastructure layers
+- **JWT Authentication** — short-lived access tokens (15 min) + refresh tokens (7 days)
+- **Role-based Authorization** — Admin and User roles via claims
+- **Entity Framework Core** — code-first migrations, repository pattern
+- **Global Exception Handling** — centralized middleware
+- **Swagger / OpenAPI** — interactive API documentation with Bearer auth
+- **Dockerized** — multi-stage Linux container build
 
-Infrastructure
-  - Persistence (DbContext, Migrations)
-  - Repositories
+---
 
---------------------------------------------------
-AUTHENTICATION & SECURITY
---------------------------------------------------
-- JWT Access Tokens (short-lived)
-- Refresh Tokens stored in database
-- Role-based authorization using claims
-- Stateless authentication
-- Centralized exception handling
+## Architecture
 
---------------------------------------------------
-TECH STACK
---------------------------------------------------
-- ASP.NET Core 9
-- Entity Framework Core
-- SQL Server
-- JWT Bearer Authentication
-- Swagger / OpenAPI
-- Docker (Linux containers)
+```
+src/
+├── Api/                  # Controllers, Middleware, Program.cs
+├── Application/          # DTOs, Interfaces, Services (business logic)
+├── Domain/               # Entities, Domain Interfaces
+└── Infrastructure/       # DbContext, Migrations, Repositories, DI
+```
 
---------------------------------------------------
-RUNNING LOCALLY (WITHOUT DOCKER)
---------------------------------------------------
-1. Update connection string in appsettings.json
-2. Apply migrations:
-   dotnet ef database update
-3. Run the API:
+The layers follow a strict dependency rule: outer layers depend on inner ones, never the reverse. The Domain layer has zero external dependencies.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | ASP.NET Core 9 |
+| Language | C# |
+| ORM | Entity Framework Core |
+| Database | Microsoft SQL Server |
+| Auth | JWT Bearer + Refresh Tokens |
+| Docs | Swagger / OpenAPI |
+| Container | Docker (Linux, multi-stage) |
+
+---
+
+## API Endpoints
+
+### Auth
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| POST | `/api/auth/login` | Login, returns JWT + refresh token | Public |
+| POST | `/api/auth/refresh` | Exchange refresh token for new access token | Public |
+| POST | `/api/auth/logout` | Invalidate refresh token | Public |
+
+### Users
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| GET | `/api/users` | List all users | Admin only |
+| POST | `/api/users` | Create a new user | Admin only |
+| PUT | `/api/users/{id}` | Update user | Admin only |
+| DELETE | `/api/users/{id}` | Delete user | Admin only |
+
+---
+
+## Getting Started
+
+### Prerequisites
+- [.NET 9 SDK](https://dotnet.microsoft.com/download)
+- SQL Server (local or Docker)
+- Docker (optional)
+
+### Run Locally
+
+1. **Update connection string** in `src/Api/appsettings.json`
+
+2. **Apply migrations**
+   ```bash
+   dotnet ef database update --project src/Infrastructure --startup-project src/Api
+   ```
+
+3. **Run the API**
+   ```bash
    dotnet run --project src/Api
-4. Open Swagger:
-   https://localhost:<port>/swagger
+   ```
 
---------------------------------------------------
-RUNNING WITH DOCKER
---------------------------------------------------
-Build image:
+4. **Open Swagger**
+   ```
+   https://localhost:<port>/swagger
+   ```
+
+### Run with Docker
+
+```bash
+# Build
 docker build -t enterprise-api .
 
-Run container:
-docker run -d -p 8080:8080
--e ASPNETCORE_ENVIRONMENT=Development
--e ConnectionStrings__DefaultConnection="Server=host.docker.internal;Database=EnterpriseAppDb;User Id=apiuser;Password=StrongPassword@123;TrustServerCertificate=True"
-enterprise-api
+# Run
+docker run -d -p 8080:8080 \
+  -e ASPNETCORE_ENVIRONMENT=Development \
+  -e ConnectionStrings__DefaultConnection="Server=host.docker.internal;Database=EnterpriseAppDb;User Id=sa;Password=YourPassword;TrustServerCertificate=True" \
+  enterprise-api
+```
 
-Open Swagger:
-http://localhost:8080/swagger
+> **Note:** Docker uses SQL authentication. Windows Authentication is not supported in Linux containers.
 
-NOTE:
-Docker uses SQL authentication. Windows authentication is not supported in Linux containers.
+Open Swagger at `http://localhost:8080/swagger`
 
---------------------------------------------------
-API ENDPOINTS
---------------------------------------------------
-POST   /api/auth/login     - Login & get JWT
-POST   /api/auth/refresh   - Refresh access token
-POST   /api/auth/logout    - Logout
-GET    /api/users          - Get users (Admin only)
-POST   /api/users          - Create user
-PUT    /api/users/{id}     - Update user
-DELETE /api/users/{id}     - Delete user
+---
 
---------------------------------------------------
-KEY LEARNINGS
---------------------------------------------------
-- Implemented JWT authentication with refresh tokens
-- Applied role-based authorization
-- Used EF Core migrations for schema versioning
-- Solved Docker + SQL Server authentication issues
-- Built a production-ready Docker image
+## Screenshots
 
---------------------------------------------------
-AUTHOR
---------------------------------------------------
-Ranveer Singh Sidhu
-Full-Stack .NET Developer
-Open to freelance, remote, and full-time opportunities
+| Swagger UI | JWT Login | Authorized Request |
+|---|---|---|
+| ![Swagger](screenshots/01-swagger-home.png) | ![Login](screenshots/02-auth-login-token.png) | ![Users](screenshots/03-authorized-users.png) |
+
+---
+
+## Authentication Flow
+
+```
+Client → POST /api/auth/login → { accessToken, refreshToken }
+Client → Sends accessToken in Authorization: Bearer <token> header
+Token expires (15 min) → POST /api/auth/refresh → new accessToken
+Logout → POST /api/auth/logout → refresh token invalidated in DB
+```
+
+---
+
+## Author
+
+**Ranveer Singh Sidhu** — Full-Stack .NET Developer  
+[LinkedIn](https://www.linkedin.com/in/ranveersinghsidhu) · [GitHub](https://github.com/RanveerSidhu)  
+Open to full-time roles in the UK (Skilled Worker Visa Sponsorship required)

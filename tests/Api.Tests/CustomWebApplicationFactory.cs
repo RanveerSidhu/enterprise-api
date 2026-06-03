@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Hosting;
 
 namespace Api.Tests;
 
@@ -32,9 +33,10 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
                 services.Remove(d);
 
             // Register a fresh AppDbContext backed by InMemory only.
+            // Use a fixed name so all scopes share the same in-memory store.
             services.AddDbContext<AppDbContext>(options =>
                 options
-                    .UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}")
+                    .UseInMemoryDatabase("TestDb")
                     .ConfigureWarnings(w =>
                         w.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
         });
@@ -46,12 +48,16 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseEnvironment("Development");
     }
 
-    protected override void ConfigureClient(HttpClient client)
+    protected override IHost CreateHost(IHostBuilder builder)
     {
-        // Seed the in-memory database once the host is built.
-        using var scope = Services.CreateScope();
+        var host = base.CreateHost(builder);
+
+        // Seed the in-memory database after the host is fully built.
+        using var scope = host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         db.Database.EnsureCreated();
         AppDbContextSeed.Seed(db);
+
+        return host;
     }
 }

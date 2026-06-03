@@ -18,7 +18,7 @@ public class AuthService(IConfiguration config, IUserRepository userRepo) : IAut
             throw new ArgumentException("Invalid email format");
 
         var user = _userRepo.GetByEmail(email)
-            ?? throw new ArgumentException($"User with email '{email}' not found");
+          ?? throw new ArgumentException("Invalid email");
 
         var accessToken = GenerateJwt(user.Email, user.Role);
 

@@ -3,6 +3,7 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Application.DTOs;
 using FluentAssertions;
+using Xunit;
 
 namespace Api.Tests;
 

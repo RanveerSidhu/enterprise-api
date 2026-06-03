@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using Application.DTOs;
 using FluentAssertions;
+using Xunit;
 
 namespace Api.Tests;
 

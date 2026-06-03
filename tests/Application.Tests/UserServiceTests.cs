@@ -1,9 +1,9 @@
 using Application.DTOs;
 using Application.Services;
 using Domain.Entities;
-using Domain.Interfaces;
 using FluentAssertions;
 using Moq;
+using Xunit;
 
 namespace Application.Tests;
 

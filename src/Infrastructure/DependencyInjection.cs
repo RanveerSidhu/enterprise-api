@@ -1,11 +1,9 @@
-﻿using Application.Interfaces;
+using Application.Interfaces;
 using Application.Services;
 using Infrastructure.Persistence;
 using Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Application.Interfaces;
-using Application.Services;
 
 namespace Infrastructure;
 

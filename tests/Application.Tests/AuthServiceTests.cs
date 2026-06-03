@@ -1,10 +1,10 @@
 using Application.DTOs;
 using Application.Services;
 using Domain.Entities;
-using Domain.Interfaces;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Xunit;
 
 namespace Application.Tests;
 

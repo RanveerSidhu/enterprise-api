@@ -33,7 +33,11 @@ public class ExceptionMiddleware
 
         var statusCode = exception switch
         {
-            ArgumentException => HttpStatusCode.BadRequest,
+            // Validation errors → 400
+            ArgumentException ex when ex.Message.Contains("format") => HttpStatusCode.BadRequest,
+            ArgumentException ex when ex.Message.Contains("cannot be empty") => HttpStatusCode.BadRequest,
+            // Business logic errors (not found, invalid token) → 500
+            ArgumentException => HttpStatusCode.InternalServerError,
             KeyNotFoundException => HttpStatusCode.NotFound,
             _ => HttpStatusCode.InternalServerError
         };

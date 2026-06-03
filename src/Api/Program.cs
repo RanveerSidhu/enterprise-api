@@ -88,3 +88,6 @@ using (var scope = app.Services.CreateScope())
     AppDbContextSeed.Seed(dbContext);
 }
 app.Run();
+
+// Expose Program class for WebApplicationFactory in integration tests
+public partial class Program { }

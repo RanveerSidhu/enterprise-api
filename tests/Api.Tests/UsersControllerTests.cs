@@ -71,7 +71,7 @@ public class UsersControllerTests : IClassFixture<CustomWebApplicationFactory>
         var request = new CreateUserRequest
         {
             FullName = "Jane Test",
-            Email    = "jane.test@example.com"
+            Email = "jane.test@example.com"
         };
 
         var response = await _client.PostAsJsonAsync("/api/users", request);
@@ -120,7 +120,7 @@ public class UsersControllerTests : IClassFixture<CustomWebApplicationFactory>
         var createRequest = new CreateUserRequest
         {
             FullName = "Original Name",
-            Email    = "original@example.com"
+            Email = "original@example.com"
         };
         var createResponse = await _client.PostAsJsonAsync("/api/users", createRequest);
         var created = await createResponse.Content.ReadFromJsonAsync<UserDto>();
@@ -129,7 +129,7 @@ public class UsersControllerTests : IClassFixture<CustomWebApplicationFactory>
         var updateRequest = new UpdateUserRequest
         {
             FullName = "Updated Name",
-            Email    = "updated@example.com"
+            Email = "updated@example.com"
         };
         var updateResponse = await _client.PutAsJsonAsync($"/api/users/{created!.Id}", updateRequest);
 
@@ -141,14 +141,14 @@ public class UsersControllerTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
-    public async Task UpdateUser_WithNonExistentId_Returns500()
+    public async Task UpdateUser_WithNonExistentId_Returns404()
     {
         await AuthenticateAsync();
 
         var request = new UpdateUserRequest { FullName = "Name", Email = "e@e.com" };
         var response = await _client.PutAsJsonAsync($"/api/users/{Guid.NewGuid()}", request);
 
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 
     // ── DELETE /api/users/{id} ───────────────────────────────────────────────
@@ -162,7 +162,7 @@ public class UsersControllerTests : IClassFixture<CustomWebApplicationFactory>
         var createRequest = new CreateUserRequest
         {
             FullName = "To Delete",
-            Email    = "delete.me@example.com"
+            Email = "delete.me@example.com"
         };
         var createResponse = await _client.PostAsJsonAsync("/api/users", createRequest);
         var created = await createResponse.Content.ReadFromJsonAsync<UserDto>();
@@ -173,12 +173,12 @@ public class UsersControllerTests : IClassFixture<CustomWebApplicationFactory>
     }
 
     [Fact]
-    public async Task DeleteUser_WithNonExistentId_Returns500()
+    public async Task DeleteUser_WithNonExistentId_Returns404()
     {
         await AuthenticateAsync();
 
         var response = await _client.DeleteAsync($"/api/users/{Guid.NewGuid()}");
 
-        response.StatusCode.Should().Be(HttpStatusCode.InternalServerError);
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
     }
 }

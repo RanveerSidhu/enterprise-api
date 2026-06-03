@@ -45,4 +45,13 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         builder.UseSetting("ConnectionStrings:DefaultConnection", "InMemory");
         builder.UseEnvironment("Development");
     }
+
+    protected override void ConfigureClient(HttpClient client)
+    {
+        // Seed the in-memory database once the host is built.
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.Database.EnsureCreated();
+        AppDbContextSeed.Seed(db);
+    }
 }

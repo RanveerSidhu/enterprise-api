@@ -13,12 +13,8 @@ public class AuthService(IConfiguration config, IUserRepository userRepo) : IAut
 
     public AuthResponse Login(string email)
     {
-        // Validate email format before querying database
-        if (!IsValidEmail(email))
-            throw new ArgumentException("Invalid email format");
-
         var user = _userRepo.GetByEmail(email)
-          ?? throw new ArgumentException("Invalid email");
+            ?? throw new ArgumentException("Invalid email");
 
         var accessToken = GenerateJwt(user.Email, user.Role);
 
@@ -38,9 +34,6 @@ public class AuthService(IConfiguration config, IUserRepository userRepo) : IAut
 
     public AuthResponse RefreshToken(string refreshToken)
     {
-        if (string.IsNullOrWhiteSpace(refreshToken))
-            throw new ArgumentException("Refresh token cannot be empty");
-
         var user = _userRepo.GetByRefreshToken(refreshToken)
             ?? throw new ArgumentException("Invalid refresh token");
 
@@ -77,9 +70,9 @@ public class AuthService(IConfiguration config, IUserRepository userRepo) : IAut
 
         var claims = new[]
         {
-            new Claim(ClaimTypes.Email, email),
-            new Claim(ClaimTypes.Role, role)
-        };
+        new Claim(ClaimTypes.Email, email),
+        new Claim(ClaimTypes.Role, role)
+    };
 
         var token = new JwtSecurityToken(
             issuer: jwt["Issuer"],
@@ -92,23 +85,4 @@ public class AuthService(IConfiguration config, IUserRepository userRepo) : IAut
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
-    /// <summary>
-    /// Validates email format using .NET's built-in MailAddress validator.
-    /// Returns true if email is in valid format, false otherwise.
-    /// </summary>
-    private static bool IsValidEmail(string email)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-            return false;
-
-        try
-        {
-            var addr = new System.Net.Mail.MailAddress(email);
-            return addr.Address == email;
-        }
-        catch
-        {
-            return false;
-        }
-    }
 }

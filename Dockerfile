@@ -2,11 +2,10 @@
 FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 WORKDIR /src
 
-COPY *.sln .
 COPY src ./src
 
-RUN dotnet restore
-RUN dotnet publish src/Api/Api.csproj -c Release -o /app/publish
+RUN dotnet restore src/Api/Api.csproj
+RUN dotnet publish src/Api/Api.csproj -c Release --no-restore -o /app/publish
 
 # -------- Runtime stage --------
 FROM mcr.microsoft.com/dotnet/aspnet:9.0

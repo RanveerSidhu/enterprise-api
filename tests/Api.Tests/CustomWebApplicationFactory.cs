@@ -2,13 +2,15 @@ using Infrastructure.Persistence;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Api.Tests;
 
 /// <summary>
-/// Boots the real ASP.NET Core pipeline but swaps SQL Server for an
-/// in-memory EF Core database — no real DB needed to run these tests.
+/// Boots the real ASP.NET Core pipeline but replaces the SQL Server
+/// DbContext with an EF Core in-memory database.
 /// </summary>
 public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 {
@@ -16,23 +18,31 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
     {
         builder.ConfigureServices(services =>
         {
-            // Remove the real SQL Server DbContext registration
-            var descriptor = services.SingleOrDefault(
-                d => d.ServiceType == typeof(DbContextOptions<AppDbContext>));
-            if (descriptor != null)
-                services.Remove(descriptor);
+            // Remove every descriptor whose service type or implementation
+            // touches DbContext or DbContextOptions so no SqlServer
+            // provider artifacts remain in the container.
+            var toRemove = services
+                .Where(d =>
+                    d.ServiceType.FullName != null &&
+                    (d.ServiceType.FullName.Contains("DbContext") ||
+                     d.ServiceType.FullName.Contains("DbContextOptions")))
+                .ToList();
 
-            // Add in-memory database (unique name per factory instance)
+            foreach (var d in toRemove)
+                services.Remove(d);
+
+            // Register a fresh AppDbContext backed by InMemory only.
             services.AddDbContext<AppDbContext>(options =>
-                options.UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}"));
+                options
+                    .UseInMemoryDatabase($"TestDb_{Guid.NewGuid()}")
+                    .ConfigureWarnings(w =>
+                        w.Ignore(InMemoryEventId.TransactionIgnoredWarning)));
         });
 
-        // Override JWT and connection string config for tests
-        builder.UseSetting("Jwt:Key",      "SuperSecretTestKey_AtLeast32CharactersLong!");
-        builder.UseSetting("Jwt:Issuer",   "TestIssuer");
+        builder.UseSetting("Jwt:Key", "SuperSecretTestKey_AtLeast32CharactersLong!");
+        builder.UseSetting("Jwt:Issuer", "TestIssuer");
         builder.UseSetting("Jwt:Audience", "TestAudience");
         builder.UseSetting("ConnectionStrings:DefaultConnection", "InMemory");
-
         builder.UseEnvironment("Development");
     }
 }
